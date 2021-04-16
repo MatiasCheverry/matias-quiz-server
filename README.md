@@ -21,6 +21,22 @@ You can see the proyect deployed at:
 
 https://matias-quiz-server.herokuapp.com/
 
+DISCLAIMER :
+If you want to clone this repository in your computer to run the app locally, you'll need to create a postres database in your computer.
+Then add the .env file with a variable named DATABASE_URL on it with the path to your database. This will depend on your postgres user, password and url
+
+For example
+
+If:
+
+-user:postgresuser
+-password:postgrespassword
+-url:postgresURL
+
+Then the variable at .env shold be like this:
+
+DATABASE_URL=postgres://postgresuser:postgrespassword@postgresURL:5432/nameofthedatabase
+
 I appreciate any feedback you want to give me. My email address is matiascheverry24@gmail.com .
 
 Thank you !
