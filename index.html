@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>QuizServer</title>
+    <style type="text/css">
+    body {
+        background-color: rgb(232, 246, 255);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin-top: 56px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    label {
+        font-size: 24px;
+        color: black;
+        padding-right: 15px;
+    }
+
+    #header {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #428fbb;
+        height: 56px;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #header h1 {
+        align-self: center;
+        margin: 20%;
+        font-size: xx-large;
+        color: white;
+        align-self: center;
+    }
+
+
+
+    #input {
+        outline: none;
+        width: 75%;
+        padding-left: 10px;
+        font-size: 20px;
+        border: none;
+        border-radius: 4px;
+    }
+
+    #logButton {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5%;
+        height: 35px;
+        background: #0160a2;
+        color: #fff;
+        font-size: 20px;
+    }
+
+    #formContainer {
+        background-color: #428fbb;
+        box-shadow: 2px 2px 5px#000;
+        width: 50%;
+        min-width: 700px;
+        margin: 20%;
+        padding: 2%;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        cursor: pointer;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="header">
+        <h1>Welcome to the Quiz App!</h1>
+    </div>
+    <form id="formContainer" action="">
+        <label>Nickname :</label>
+        <input id="input" autocomplete="off" /><button id="logButton">
+            Log In
+        </button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var socket = io();
+    var form = document.getElementById("formContainer");
+    var input = document.getElementById("input");
+
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        if (input.value) {
+            await socket.emit("log", input.value, async (response) => {
+                await localStorage.setItem(
+                    "user",
+                    JSON.stringify(response.user)
+                );
+                await console.log(
+                    JSON.parse(localStorage.getItem("user"))
+                );
+                input.value = "";
+                window.location.href = "quiz";
+            });
+        }
+    });
+    </script>
+</body>
+
+</html>

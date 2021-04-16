@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <style>
+    body {
+        background-color: rgb(232, 246, 255);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin-top: 56px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #header {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #428fbb;
+        height: 56px;
+        font-size: xx-large;
+        color: white;
+        align-self: center padding-right: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+
+    #container {
+        background-color: #428fbb;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 2px 2px 5px#000;
+        width: 50%;
+        min-width: 700px;
+        border-radius: 5px;
+    }
+
+
+    #logButton {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5%;
+        height: 35px;
+        background: #0160a2;
+        color: #fff;
+        font-size: 20px;
+    }
+
+
+    #time {
+        font-size: xx-large;
+    }
+
+    #answer {
+        width: 80%;
+        min-height: 5%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        font-size: x-large;
+
+        padding: 5px;
+    }
+
+    #questionslist {
+        display: flex;
+        flex-direction: column;
+        list-style-type: none;
+        align-items: center;
+        font-size: xx-large;
+        margin: 5%;
+        padding: 5%;
+    }
+    </style>
+</head>
+
+<body>
+    <nav id="header">Playing as:</nav>
+    <div id="questionslist"></div>
+    <div id="score">The Score will be shown here</div>
+    <div id="time" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var socket = io();
+
+    var questionslist = document.getElementById("questionslist");
+    var display = document.querySelector("#time");
+    var scoreCard = document.querySelector("#score");
+    var header = document.querySelector("#header");
+    var index = 0;
+    var questions = [];
+    var user = JSON.parse(localStorage.getItem("user"));
+
+
+    window.onload = function() {
+        if (!user) {
+            window.location.href = "/";
+        } else {
+            socket.emit("getData", user, async (data) => {
+                questions = data.nextQuestion;
+                index = 0;
+                nextQuestion();
+            });
+            header.innerHTML = "Playing as: " + user.nickname;
+            var logoutButton = document.createElement("button");
+            logoutButton.innerHTML = "Log out";
+            logoutButton.setAttribute("id", "logButton");
+            logoutButton.addEventListener("click", () => {
+                localStorage.removeItem("user");
+                window.location.href = "/";
+            });
+            header.appendChild(logoutButton);
+        }
+    };
+    socket.on("newDeadline", function(newDeadline) {
+        console.log(newDeadline);
+        display.textContent = newDeadline;
+    });
+
+    function nextQuestion(e, q) {
+        if (e && q) {
+            var answerObject = {
+                question: q,
+                answer: e.target.value,
+                userId: JSON.parse(localStorage.getItem("user"))
+                    .id_user,
+            };
+            console.log(answerObject);
+
+            socket.emit("answer", answerObject);
+        }
+        if (index <= 4) {
+            var question = questions[index];
+            var quizItem = document.createElement("div");
+            quizItem.textContent = question.text;
+            quizItem.setAttribute("id", "container");
+            questionslist.innerHTML = "";
+            questionslist.appendChild(quizItem);
+            question.answers.forEach((a) => {
+                var answer = document.createElement("button");
+                answer.addEventListener("click", (e) =>
+                    nextQuestion(e, question.text)
+                );
+                answer.innerHTML = a;
+                answer.setAttribute("id", "answer");
+                answer.setAttribute("value", a);
+                quizItem.appendChild(answer);
+                // console.log(a);
+            });
+            index = index + 1;
+        } else {
+            var finished = document.createElement("div");
+            finished.innerHTML = "<h1>You Have Finished!</h1>";
+            questionslist.innerHTML = "";
+
+            questionslist.appendChild(finished);
+        }
+    }
+    socket.on("newQuiz", function(quizArray) {
+        questions = quizArray;
+        index = 0;
+        nextQuestion();
+    });
+    socket.on("sendscore", function(score) {
+        console.log(score);
+        if (score && score.length >= 1) {
+            scoreCard.innerHTML = "Score from Previous Game";
+            var showScore = document.createElement("ul");
+            score.forEach((s, i) => {
+                var userScore = document.createElement("li");
+                userScore.innerHTML =
+                    (i + 1) + ") " + s.nickname + " - Points: " + s.points;
+                scoreCard.appendChild(userScore);
+            });
+            scoreCard.appendChild(showScore);
+        } else {
+            scoreCard.innerHTML = "The Score will be shown here";
+        }
+    });
+    </script>
+</body>
+
+</html>
