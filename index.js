@@ -2,6 +2,7 @@ const app = require("./src/app.js");
 const { conn, Question, Answer, User } = require("./src/db.js");
 const http = require("http");
 const server = http.createServer(app);
+const port = process.env.PORT || 3001;
 // server-side
 const io = require("socket.io")(server, {
     cors: {
@@ -90,8 +91,8 @@ conn.sync({ force: true })
         app.get("/quiz", (req, res) => {
             res.sendFile(__dirname + "/quiz.html");
         });
-        server.listen(3001, () => {
-            console.log("%s listening at 3001"); // eslint-disable-line no-console
+        server.listen(port, () => {
+            console.log("%s listening at " + port); // eslint-disable-line no-console
         });
         const seeder = async function () {
             arrayOfQuestions.map(async (question) => {
